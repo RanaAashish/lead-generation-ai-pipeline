@@ -1,0 +1,27 @@
+# Web Scraping
+beautifulsoup4>=4.9.3
+requests>=2.25.1
+google>=3.0.0
+
+# Data Processing
+pandas>=1.2.4
+tiktoken>=0.8.0
+
+# LLM & AI
+openai>=1.61.1
+langchain-openai>=0.0.2
+
+# Communication
+pywhatkit>=5.4
+
+# Development
+python-dotenv>=0.19.0
+jupyter>=1.0.0
+
+# Gmail Automation
+flask==2.0.1
+werkzeug==2.0.1
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+        

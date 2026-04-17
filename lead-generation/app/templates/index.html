@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Generation Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container { margin-top: 50px; }
+        #results { margin-top: 20px; }
+        .loading { display: none; }
+        .contacts-container {
+            margin-top: 20px;
+            padding: 20px;
+        }
+        .contact-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        .contact-card h5 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .contact-card p {
+            margin-bottom: 8px;
+        }
+        .contact-card a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .contact-card a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Lead Generation Tool</h1>
+        <form id="searchForm">
+            <div class="mb-3">
+                <label for="query" class="form-label">Search Query</label>
+                <input type="text" class="form-control" id="query" name="query" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Search and Process</button>
+        </form>
+        
+        <div class="loading mt-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-2">Processing your request...</span>
+        </div>
+
+        <div id="results" class="mt-4">
+            <div class="contacts-container">
+                <h3>Found Contacts:</h3>
+                <div id="contactsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            const loading = document.querySelector('.loading');
+            const contactsList = document.getElementById('contactsList');
+
+            loading.style.display = 'block';
+            contactsList.innerHTML = ''; // Clear previous results
+            
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+                
+                const data = await response.json();
+                console.log('Raw response data:', data);
+                console.log('Contacts array:', data.contacts);
+                console.log('Is contacts an array?', Array.isArray(data.contacts));
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.contacts && Array.isArray(data.contacts)) {
+                    data.contacts.forEach(contact => {
+                        const card = document.createElement('div');
+                        card.className = 'contact-card p-3';
+                        card.innerHTML = `
+                            <h5>${contact.institute_name || 'N/A'}</h5>
+                            <p><strong>Email:</strong> ${contact.email || 'N/A'}</p>
+                            <p><strong>Phone:</strong> ${Array.isArray(contact.phone_numbers) ? contact.phone_numbers.join(', ') : 'N/A'}</p>
+                            <p><strong>Location:</strong> ${contact.location || 'N/A'}</p>
+                            <p><strong>Address:</strong> ${contact.address || 'N/A'}</p>
+                            <p><strong>Website:</strong> <a href="${contact.website || '#'}" target="_blank">${contact.website || 'N/A'}</a></p>
+                        `;
+                        contactsList.appendChild(card);
+                    });
+                } else {
+                    contactsList.innerHTML = '<p>No contacts found.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                contactsList.innerHTML = `<p class="text-danger">Error: ${error.message}</p>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
